@@ -67,3 +67,4 @@ class Spotify():
             self.on_minimize()
         except Exception as e:
             print(f"An error occurred: {e}")
+            

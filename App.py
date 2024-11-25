@@ -1,6 +1,5 @@
 import ctypes
 import os
-import pyautogui
 import requests
 import subprocess
 import time
@@ -22,13 +21,16 @@ class App(tk.Tk):
         super().__init__()
         self.window_state = "normal"
         self.binds()
+        self.start_player()
+        self.after(10, self.__remove_window_frame)
+        self.attributes("-fullscreen", True)
+        self.after(100, self.media_init)
+
+    def media_init(self):
         if Utils.check_internet():
             self.stop_video_and_update(True)
             if WITH_SPOTIFY:
                 self.spotify()
-        self.start_player()
-        self.after(10, self.__remove_window_frame)
-        self.attributes("-fullscreen", True)
 
     #Function to store all program binds pool
     def binds(self):
@@ -47,21 +49,30 @@ class App(tk.Tk):
         self.media.place(x=0, y=0)
         self.media.pack()
         self.frame1.bind("<Button-3>", self.__context_menu)
-
-        self.play()
+        if self.load_media(loading=True): self.play()
+        
+    #Function to load media player with the videos in assets directory
+    def load_media(self, loading=True):
+        try:
+            if loading:
+                self.loading_media = self.instance.media_list_new()
+                self.loading_media.add_media(self.instance.media_new('./_internal/src/loading.mp4'))
+                self.media_list_player.set_media_list(self.loading_media)
+            else:
+                self.videos = [f'./_internal/assets/{file}' for file in os.listdir('./_internal/assets')]
+                self.media_list = self.instance.media_list_new()
+                for video in self.videos:
+                    self.media_list.add_media(self.instance.media_new(video))
+                self.media_list_player.set_media_list(self.media_list)
+            self.loaded = loading
+            return self.loaded
+        except Exception as e:
+            Utils.log(f"An error occurred while loading the media: {e}")
 
     #Function to upload videos and set the media list
     def play(self):
         try:
-            self.videos = [f'./_internal/src/assets/{file}' for file in os.listdir('./_internal/src/assets')]
-            self.media_list = self.instance.media_list_new()
-            try:
-                for video in self.videos:
-                    self.media_list.add_media(self.instance.media_new(video))
-                self.media_list_player.set_media_list(self.media_list)
-                self.media_list_player.set_media_player(self.media_player)
-            except Exception as e:
-                Utils.log(f"An error occurred while loading the media: {e}")
+            self.media_list_player.set_media_player(self.media_player)
             self.media_player.set_fullscreen(True)
             self.media_player.set_hwnd(self.media.winfo_id())
             self.media_list_player.play()
@@ -79,15 +90,13 @@ class App(tk.Tk):
     #Function to create a dialog box in right mouse button with the context menu
     def __context_menu(self, event):
         menu = tk.Menu(self, tearoff=0)
-
-        menu.add_command(label="Spotify", command=self.spotify)
-        # menu.add_command(label="Sky+", command=self.start_sky)
-        # menu.add_separator()
+        if WITH_SPOTIFY:
+            menu.add_command(label="Spotify", command=self.spotify)
+            menu.add_separator()
         menu.add_command(label="Atualizar Vídeos", command=self.update_videos)
         menu.add_command(label="Configurações", command=self.on_configure)
         menu.add_separator()
         menu.add_command(label="Minimizar", command=self.on_minimize)
-        # menu.add_command(label="Reiniciar", command=self.restart_app)
         menu.add_command(label="Fechar", command=self.destroy_app)
         menu.post(event.x_root, event.y_root)
 
@@ -106,28 +115,30 @@ class App(tk.Tk):
         except Exception as e:
             Utils.log(f"An error occurred while minimizing the application: {e}")
 
-
     #Function to open the settings file
     def on_configure(self):
         ctypes.windll.shell32.ShellExecuteW(None, "open", "notepad.exe", fr"C:\Programs Files(x86)\CFCSN\smart-panel\config.txt\config.py", None, 1)
 
     #Function to call a update list function using tkinter.after
-    def update_videos(self, init=False):
-        try:
-            self.after(10, self.stop_video_and_update(init))
-        except Exception as e:
-            Utils.log(f"An error occurred while stop media player: {e}")
+    def update_videos(self):
+        if Utils.check_internet():
+            if self.load_media(loading=True):
+                try:
+                    self.after(10000, self.stop_video_and_update)
+                except Exception as e:
+                    Utils.log(f"An error occurred while stop media player: {e}")
+        else:
+            messagebox.showerror("Sem conexão com a internet", "Verifique sua conexão com a internet e tente novamente.\n"+
+                                 "Se o problema persistir contacte o suporte.")
 
     #Function to stop de media player, delete all files in assets directory and download new medias from google drive.
     def stop_video_and_update(self, init=False):
         try:
-            if hasattr(self, "media_list_player") :
-                if self.media_list_player.is_playing():
-                    self.media_list_player.stop()
-            Utils.clear_folder('./_internal/src/assets')
-            download_folder(LINK_DRIVE, './_internal/src/assets')
-            if not init:
-                self.play()    
+            self.after(100, Utils.clear_folder('./_internal/assets'))
+            download_folder(LINK_DRIVE, './_internal/assets')
+            if self.load_media(loading=False):
+                # if not init:
+                self.play()
         except Exception as e:
             Utils.log(f"An error occurred while updating assets data: {e}")
 
@@ -147,14 +158,10 @@ class App(tk.Tk):
                 del self._spotify
                 self.spotify()
                 
-
-            
     #TODO Function to refresh app NAO FUNCIONA
     def restart_app(self):
         self.destroy_app()
         self.__init__()
-
-   
 
 if __name__ == "__main__":
     app = App()
