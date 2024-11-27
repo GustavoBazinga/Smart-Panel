@@ -160,6 +160,8 @@ _internal/src/assets/*
 _internal/src/screenshots/*
 logs/
 
+output/
+
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

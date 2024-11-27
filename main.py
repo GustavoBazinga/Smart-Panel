@@ -2,6 +2,7 @@ from App import App
 from config import *
 import os
 
+
 def create_folder():
     try:
         os.mkdir(fr'C:\smart-panel')
