@@ -19,6 +19,7 @@ class App(tk.Tk):
 
     def __init__(self):
         super().__init__()
+        self.attributes("-fullscreen", True)
         self.window_state = "normal"
         self.binds()
         self.start_player()
@@ -32,13 +33,14 @@ class App(tk.Tk):
             if WITH_SPOTIFY:
                 self.spotify()
 
+
     #Function to store all program binds pool
     def binds(self):
         self.bind("<Unmap>", self.__on_window_state_change)
         self.bind("<Map>", self.__on_window_state_change)
 
     #Function to create and configure a VLC Media Player with the Canva
-    def start_player(self):
+    def start_player(self, loading_media=False):
         self.instance = vlc.Instance()
         self.media_player = self.instance.media_player_new()
         self.media_list_player = self.instance.media_list_player_new()
@@ -139,6 +141,7 @@ class App(tk.Tk):
             if self.load_media(loading=False):
                 # if not init:
                 self.play()
+
         except Exception as e:
             Utils.log(f"An error occurred while updating assets data: {e}")
 
@@ -162,6 +165,7 @@ class App(tk.Tk):
     def restart_app(self):
         self.destroy_app()
         self.__init__()
+
 
 if __name__ == "__main__":
     app = App()
