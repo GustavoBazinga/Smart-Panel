@@ -1,5 +1,5 @@
-#SMART PANEL
-##TO DO
+# SMART PANEL
+## To Do
 - [x] Media Player
 - [x] Driver download
 - [ ] Context Menu
