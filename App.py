@@ -1,6 +1,5 @@
 import ctypes
 import os
-import pyautogui
 import requests
 import subprocess
 import time
@@ -23,16 +22,17 @@ class App(tk.Tk):
         self.attributes("-fullscreen", True)
         self.window_state = "normal"
         self.binds()
-        
-        #     if WITH_SPOTIFY:
-        #         self.spotify()
-        self.start_player(loading_media=True)
+        self.start_player()
         self.after(10, self.__remove_window_frame)
+        self.attributes("-fullscreen", True)
+        self.after(100, self.media_init)
 
-        #Wait all code before this
+    def media_init(self):
         if Utils.check_internet():
-            self.after(5000, self.stop_video_and_update)
-            #Wait code below
+            self.stop_video_and_update(True)
+            if WITH_SPOTIFY:
+                self.spotify()
+
 
     #Function to store all program binds pool
     def binds(self):
@@ -51,54 +51,96 @@ class App(tk.Tk):
         self.media.place(x=0, y=0)
         self.media.pack()
         self.frame1.bind("<Button-3>", self.__context_menu)
-        if loading_media:
-            self.load_media(state="loading")
-        else:
-            self.load_media()
-        self.play()
-    
-    #Function to upload videos and set the media list
-    def load_media(self, state="normal"):
+        if self.load_media(loading=True): self.play()
+        
+    #Function to load media player with the videos in assets directory
+    def load_media(self, loading=True):
         try:
-            if state == "normal":
-                self.videos = [f'./_internal/src/assets/{file}' for file in os.listdir('./_internal/src/assets')]
-            elif state == "loading":
-                self.videos = [f'./_internal/src/default/{file}' for file in os.listdir('./_internal/src/default') if file == "loading.mp4"]
-            self.media_list = self.instance.media_list_new()
-            try:
+            if loading:
+                self.loading_media = self.instance.media_list_new()
+                self.loading_media.add_media(self.instance.media_new('./_internal/src/loading.mp4'))
+                self.media_list_player.set_media_list(self.loading_media)
+            else:
+                self.videos = [f'./_internal/assets/{file}' for file in os.listdir('./_internal/assets')]
+                self.media_list = self.instance.media_list_new()
                 for video in self.videos:
                     self.media_list.add_media(self.instance.media_new(video))
                 self.media_list_player.set_media_list(self.media_list)
-                self.media_list_player.set_media_player(self.media_player)
-            except Exception as e:
-                Utils.log(f"An error occurred while loading the media: {e}")
+            self.loaded = loading
+            return self.loaded
         except Exception as e:
-            Utils.log(f"An error occurred while starting the media player: {e}") 
-            return False   
-        else:
-            print("Media loaded successfully")
-            return True
-        
+            Utils.log(f"An error occurred while loading the media: {e}")
 
+    #Function to upload videos and set the media list
     def play(self):
-        self.media_player.set_fullscreen(True)
-        self.media_player.set_hwnd(self.media.winfo_id())
-        self.media_list_player.play()
+        try:
+            self.media_list_player.set_media_player(self.media_player)
+            self.media_player.set_fullscreen(True)
+            self.media_player.set_hwnd(self.media.winfo_id())
+            self.media_list_player.play()
+        except Exception as e:
+            Utils.log(f"An error occurred while starting the media player: {e}")    
+
+    #Function to remove the window border
+    def __remove_window_frame(self):
+        hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+        style = ctypes.windll.user32.GetWindowLongPtrW(hwnd, -16)
+        style &= ~0x00C00000  # Remove WS_CAPTION
+        ctypes.windll.user32.SetWindowLongPtrW(hwnd, -16, style)
+        ctypes.windll.user32.SetWindowPos(hwnd, None, 0, 0, 0, 0, 0x0273)
+
+    #Function to create a dialog box in right mouse button with the context menu
+    def __context_menu(self, event):
+        menu = tk.Menu(self, tearoff=0)
+        if WITH_SPOTIFY:
+            menu.add_command(label="Spotify", command=self.spotify)
+            menu.add_separator()
+        menu.add_command(label="Atualizar Vídeos", command=self.update_videos)
+        menu.add_command(label="Configurações", command=self.on_configure)
+        menu.add_separator()
+        menu.add_command(label="Minimizar", command=self.on_minimize)
+        menu.add_command(label="Fechar", command=self.destroy_app)
+        menu.post(event.x_root, event.y_root)
+
+    #Function to establish the window state
+    def __on_window_state_change(self, event):
+        if event.type == tk.EventType.Unmap and self.window_state != "minimized":
+            self.window_state = "minimized"
+            self.on_minimize()
+        elif event.type == tk.EventType.Map and self.window_state != "normal":
+            self.window_state = "normal"
+
+    #Function to minimize the main application and all of instances
+    def on_minimize(self):
+        try:
+            self.iconify()
+        except Exception as e:
+            Utils.log(f"An error occurred while minimizing the application: {e}")
+
+    #Function to open the settings file
+    def on_configure(self):
+        ctypes.windll.shell32.ShellExecuteW(None, "open", "notepad.exe", fr"C:\Programs Files(x86)\CFCSN\smart-panel\config.txt\config.py", None, 1)
 
     #Function to call a update list function using tkinter.after
     def update_videos(self):
-        if self.load_media(state="loading"):
-            try:
-                self.after(1000, self.stop_video_and_update())
-            except Exception as e:
-                Utils.log(f"An error occurred while stop media player: {e}")
+        if Utils.check_internet():
+            if self.load_media(loading=True):
+                try:
+                    self.after(10000, self.stop_video_and_update)
+                except Exception as e:
+                    Utils.log(f"An error occurred while stop media player: {e}")
+        else:
+            messagebox.showerror("Sem conexão com a internet", "Verifique sua conexão com a internet e tente novamente.\n"+
+                                 "Se o problema persistir contacte o suporte.")
 
     #Function to stop de media player, delete all files in assets directory and download new medias from google drive.
-    def stop_video_and_update(self):
-        try:      
-            Utils.clear_folder('./_internal/src/assets')
-            download_folder(LINK_DRIVE, './_internal/src/assets')
-            self.load_media()
+    def stop_video_and_update(self, init=False):
+        try:
+            self.after(100, Utils.clear_folder('./_internal/assets'))
+            download_folder(LINK_DRIVE, './_internal/assets')
+            if self.load_media(loading=False):
+                # if not init:
+                self.play()
 
         except Exception as e:
             Utils.log(f"An error occurred while updating assets data: {e}")
@@ -119,52 +161,11 @@ class App(tk.Tk):
                 del self._spotify
                 self.spotify()
                 
-
-            
-        #Function to establish the window state
-    def __on_window_state_change(self, event):
-        if event.type == tk.EventType.Unmap and self.window_state != "minimized":
-            self.window_state = "minimized"
-            self.on_minimize()
-        elif event.type == tk.EventType.Map and self.window_state != "normal":
-            self.window_state = "normal"
-
-    #Function to minimize the main application and all of instances
-    def on_minimize(self):
-        try:
-            self.iconify()
-        except Exception as e:
-            Utils.log(f"An error occurred while minimizing the application: {e}")
-
-    #Function to open the settings file
-    def on_configure(self):
-        ctypes.windll.shell32.ShellExecuteW(None, "open", "notepad.exe", fr"C:\Programs Files(x86)\CFCSN\smart-panel\config.txt\config.py", None, 1)
-
+    #TODO Function to refresh app NAO FUNCIONA
+    def restart_app(self):
         self.destroy_app()
         self.__init__()
 
-   #Function to create a dialog box in right mouse button with the context menu
-    def __context_menu(self, event):
-        menu = tk.Menu(self, tearoff=0)
-
-        menu.add_command(label="Spotify", command=self.spotify)
-        # menu.add_command(label="Sky+", command=self.start_sky)
-        # menu.add_separator()
-        menu.add_command(label="Atualizar Vídeos", command=self.update_videos)
-        menu.add_command(label="Configurações", command=self.on_configure)
-        menu.add_separator()
-        menu.add_command(label="Minimizar", command=self.on_minimize)
-        # menu.add_command(label="Reiniciar", command=self.restart_app)
-        menu.add_command(label="Fechar", command=self.destroy_app)
-        menu.post(event.x_root, event.y_root)
-        #Function to remove the window border
-
-    def __remove_window_frame(self):
-        hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
-        style = ctypes.windll.user32.GetWindowLongPtrW(hwnd, -16)
-        style &= ~0x00C00000  # Remove WS_CAPTION
-        ctypes.windll.user32.SetWindowLongPtrW(hwnd, -16, style)
-        ctypes.windll.user32.SetWindowPos(hwnd, None, 0, 0, 0, 0, 0x0273)
 
 if __name__ == "__main__":
     app = App()
