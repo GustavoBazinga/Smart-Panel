@@ -157,6 +157,7 @@ cython_debug/
 dist/
 
 _internal/src/
+_interanl/config.txt
 logs/
 
 output/

@@ -31,6 +31,8 @@ class Utils:
                 os.mkdir("./_internal/src")
             if not os.path.exists("./_internal/src/default"):
                 os.mkdir("./_internal/src/default")
+            if not os.path.exists("./_internal/src/assets"):
+                os.mkdir("./_internal/src/assets")
         except Exception as e:
             Utils.log(f"An error occurred while trying to create the default folders: {e}")
 
