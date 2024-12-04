@@ -33,8 +33,14 @@ class Utils:
                 os.mkdir("./_internal/src/default")
             if not os.path.exists("./_internal/src/assets"):
                 os.mkdir("./_internal/src/assets")
+            if not os.path.exists("./_internal/src/default/secret.key"):
+                key = Fernet.generate_key()
+                with open("./_internal/src/default/secret.key", "wb") as f:
+                    f.write(key)
         except Exception as e:
             Utils.log(f"An error occurred while trying to create the default folders: {e}")
+
+
 
 
     @staticmethod
