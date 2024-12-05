@@ -5,10 +5,11 @@ from Utils import Utils
 
 
 if __name__ == "__main__":  
+    
+    Utils.create_default_folders()
 
     Utils.check_config_file()
-
-    Utils.create_default_folders()
+    
     try:
         appp = App()
         appp.mainloop()
