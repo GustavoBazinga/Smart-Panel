@@ -49,7 +49,6 @@ class Utils:
         current_ip = current_ip.split("IPv4")[1].split(":")[1].split("\n")[0].strip()
 
         def set_api_ip():
-
             with open("./_internal/config.txt", "r") as f:
                 lines = f.readlines()
             with open("./_internal/config.txt", "w") as f:
@@ -60,7 +59,7 @@ class Utils:
                         f.write(line)
 
         def create_file():
-
+            Utils.log("Creating the configuration file")
             with open("./_internal/config.txt", "w") as f:
 
                 f.write("LINK_DRIVE='https://drive.google.com/drive/u/1/folders/1fPrFnbURqeJGgq0LcBexrruELP_JGu3W'" + "\n")
@@ -83,7 +82,7 @@ class Utils:
                 f.write("SPOTIFY_DAILY_PLAY=" + "\n")
                 f.write(fr"API_IP='{current_ip}'" + "\n")
 
-                
+            Utils.log("Configuration file created successfully")
             
         
         if not os.path.exists("./_internal/config.txt"):
@@ -96,8 +95,10 @@ class Utils:
     @staticmethod
     def clear_folder(folder):
         try:
+            Utils.log(f"Cleaning the assets folder")
             for file in os.listdir(folder):
                 os.remove(folder + "/" + file)
+            Utils.log(f"Assets folder cleaned successfully")
         except:
             Utils.log(f"An error occurred while cleaning the assets folder: {e}")
 
@@ -114,9 +115,12 @@ class Utils:
     
     @staticmethod
     def check_internet():
+        Utils.log(f"Checking internet connection...")
         try:
             import requests
             response = requests.get("https://www.google.com")
+            Utils.log(f'Internet connection is OK')
             return True
         except:
+            Utils.log(f'No internet connection')
             return False

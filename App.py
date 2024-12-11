@@ -33,11 +33,13 @@ class App(tk.Tk):
         app = Flask(__name__)
         @app.route('/update', methods=['GET'])
         def api_update():
+            Utils.log(f'API Update request received')
             self.update_videos()
             return {"status": "success"}
         
         @app.route('/restart', methods=['GET'])
         def api_restart():
+            Utils.log(f'API Restart computer request received')
             os.system("shutdown /r /t 1") 
             return {"status": "success"}
         
@@ -45,13 +47,11 @@ class App(tk.Tk):
         
     def media_init(self):
         if Utils.check_internet():
-        # if False:
-            self.stop_video_and_update()
+            self.videos_update()
             if Utils.config("WITH_SPOTIFY") == "True":
                 self.spotify()
         else:
             self.load_media(loading=False)
-            # self.spotify()
 
     #Function to store all program binds pool
     def binds(self):
@@ -60,6 +60,7 @@ class App(tk.Tk):
 
     #Function to create and configure a VLC Media Player with the Canva
     def start_player(self):
+        Utils.log(f"Starting the media player")
         self.instance = vlc.Instance()
         self.media_player = self.instance.media_player_new()
         self.media_list_player = self.instance.media_list_player_new()
@@ -70,6 +71,7 @@ class App(tk.Tk):
         self.media.place(x=0, y=0)
         self.media.pack()
         self.frame1.bind("<Button-3>", self.__context_menu)
+        Utils.log(f"Media player started successfully")
         if self.load_media(loading=True): self.play()
         
     #Function to load media player with the videos in assets directory
@@ -80,11 +82,13 @@ class App(tk.Tk):
                 self.loading_media.add_media(self.instance.media_new('./_internal/src/default/loading.mp4'))
                 self.media_list_player.set_media_list(self.loading_media)
             else:
+                Utils.log(f"Loading the media list")
                 self.medias = [f'./_internal/src/assets/{file}' for file in os.listdir('./_internal/src/assets')]
                 self.media_list = self.instance.media_list_new()
                 for media in self.medias:
                     self.media_list.add_media(self.instance.media_new(media))
                 self.media_list_player.set_media_list(self.media_list)
+                Utils.log(f"Media list loaded successfully")
             self.loaded = loading
             return self.loaded
         except Exception as e:
@@ -93,10 +97,12 @@ class App(tk.Tk):
     #Function to upload videos and set the media list
     def play(self):
         try:
+            Utils.log(f"Trying to play the media list")
             self.media_list_player.set_media_player(self.media_player)
             self.media_player.set_fullscreen(True)
             self.media_player.set_hwnd(self.media.winfo_id())
             self.media_list_player.play()
+            Utils.log(f"Media list played successfully")
         except Exception as e:
             Utils.log(f"An error occurred while starting the media player: {e}")    
 
@@ -125,19 +131,23 @@ class App(tk.Tk):
     def __on_window_state_change(self, event):
         if event.type == tk.EventType.Unmap and self.window_state != "minimized":
             self.window_state = "minimized"
+            Utils.log(f"Minimizing the application")
             self.on_minimize()
         elif event.type == tk.EventType.Map and self.window_state != "normal":
             self.window_state = "normal"
+            Utils.log(f"Maximizing the application")
 
     #Function to minimize the main application and all of instances
     def on_minimize(self):
         try:
             self.iconify()
+            Utils.log(f"Application minimized")
         except Exception as e:
             Utils.log(f"An error occurred while minimizing the application: {e}")
 
     #Function to open the settings file
     def on_configure(self):
+        Utils.log(f"Opening the settings file")
         ctypes.windll.shell32.ShellExecuteW(None, "open", "notepad.exe", fr"./_internal/config.py", None, 1)
 
     #Function to call a update list function using tkinter.after
@@ -145,7 +155,7 @@ class App(tk.Tk):
         if Utils.check_internet():
             if self.load_media(loading=True):
                 try:
-                    self.after(5000, self.stop_video_and_update)
+                    self.after(5000, self.videos_update)
                 except Exception as e:
                     Utils.log(f"An error occurred while stop media player: {e}")
         else:
@@ -153,14 +163,16 @@ class App(tk.Tk):
                                  "Se o problema persistir contate o suporte.")
 
     #Function to stop de media player, delete all files in assets directory and download new medias from google drive.
-    def stop_video_and_update(self):
+    def videos_update(self):
         try:
             attempt = 1
             while attempt != 4:
                 try:
                     self.after(100, Utils.clear_folder('./_internal/src/assets'))
+                    Utils.log(f"Trying to download the videos, attempt {attempt}")
                     if download_folder(Utils.config("LINK_DRIVE"), './_internal/src/assets'):
                         attempt = 4
+                        Utils.log(f"Videos downloaded successfully")
                 except:
                     attempt += 1
                     Utils.log(f"An error occurred while downloading the videos, attempt {attempt}")
@@ -172,6 +184,7 @@ class App(tk.Tk):
 
     #Function to close de app and all instances
     def destroy_app(self):
+        Utils.log(f"Closing the application")
         if hasattr(self, "_spotify"):
             self._spotify.end()
             del self._spotify
@@ -183,17 +196,13 @@ class App(tk.Tk):
 
     def spotify(self):
         if not hasattr(self, "_spotify"):
+            Utils.log(f"Starting Spotify")
             self._spotify = Spotify(url=fr"https://accounts.spotify.com/pt-BR/login?continue=https%3A%2F%2Fopen.spotify.com%2Fplaylist%2F16F6TQwQ1pZGtRn9s9zXpM")
         else:
             response = self._spotify.on_maximize()
             if response == "closed":
                 del self._spotify
                 self.spotify()
-                
-    #TODO Function to refresh app NAO FUNCIONA
-    def restart_app(self):
-        self.destroy_app()
-        self.__init__()
 
 if __name__ == "__main__":
     app = App()

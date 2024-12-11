@@ -157,6 +157,7 @@ cython_debug/
 dist/
 
 _internal/
+_internal/config.txt
 logs/
 secret.key
 
