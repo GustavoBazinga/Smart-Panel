@@ -1,5 +1,6 @@
 import ctypes
 import os
+import time
 import tkinter as tk
 import vlc
 from googledriver import download_folder
@@ -33,6 +34,11 @@ class App(tk.Tk):
         @app.route('/update', methods=['GET'])
         def api_update():
             self.update_videos()
+            return {"status": "success"}
+        
+        @app.route('/restart', methods=['GET'])
+        def api_restart():
+            os.system("shutdown /r /t 1") 
             return {"status": "success"}
         
         app.run(port=5000, host=fr'{Utils.config("API_IP")}')
@@ -139,7 +145,6 @@ class App(tk.Tk):
         if Utils.check_internet():
             if self.load_media(loading=True):
                 try:
-                    # messagebox.showinfo("Atualizando Vídeos", "Atualizando vídeos, aguarde...")
                     self.after(5000, self.stop_video_and_update)
                 except Exception as e:
                     Utils.log(f"An error occurred while stop media player: {e}")
@@ -150,10 +155,17 @@ class App(tk.Tk):
     #Function to stop de media player, delete all files in assets directory and download new medias from google drive.
     def stop_video_and_update(self):
         try:
-            self.after(100, Utils.clear_folder('./_internal/src/assets'))
-            download_folder(Utils.config("LINK_DRIVE"), './_internal/src/assets')
+            attempt = 1
+            while attempt != 4:
+                try:
+                    self.after(100, Utils.clear_folder('./_internal/src/assets'))
+                    if download_folder(Utils.config("LINK_DRIVE"), './_internal/src/assets'):
+                        attempt = 4
+                except:
+                    attempt += 1
+                    Utils.log(f"An error occurred while downloading the videos, attempt {attempt}")
+                    time.sleep(5)
             if self.load_media(loading=False):
-                # if not init:
                 self.play()
         except Exception as e:
             Utils.log(f"An error occurred while updating assets data: {e}")

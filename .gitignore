@@ -156,12 +156,9 @@ cython_debug/
 
 dist/
 
-_internal/src/
-_interanl/config.txt
+_internal/
 logs/
-
-output/
-
+secret.key
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

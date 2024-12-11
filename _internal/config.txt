@@ -1,5 +1,5 @@
 LINK_DRIVE="https://drive.google.com/drive/u/1/folders/1fPrFnbURqeJGgq0LcBexrruELP_JGu3W"
-WITH_SPOTIFY=True
+WITH_SPOTIFY=False
 
 ACCOUNT_USERNAME=social@clubedosfuncionarios.com.br
 SPOTIFY_PASSWORD=gAAAAABnTw1knMqas0EugEyn2VEPDI6lvJ6wr0ahBsHTZs-El1Dp6P4TVSi78aBGRPl0JczhA4X__BvAeMv3JdGzRWhfRPYQceNEeZMYQ8RIu1f1V-37NpU=
