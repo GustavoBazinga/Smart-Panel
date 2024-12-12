@@ -35,7 +35,7 @@ Para gerar uma senha criptografada utilizando a chave de criptografia localizada
 
 Exemplo de execução:
 
-![Usage_Example]([https://github.com/Erick-Porto/assets/blob/main/utilization_example.gif])
+![Usage_Example](https://github.com/Erick-Porto/assets/blob/main/utilization_example.gif)
 
 ## Tutorial: Gerando uma Senha Criptografada - Script
 
