@@ -34,7 +34,7 @@ Para gerar uma senha criptografada utilizando a chave de criptografia localizada
     O script utilizará a chave de criptografia localizada em `default\secret.key` para criptografar a senha fornecida e exibirá a senha criptografada no terminal.
 
 Exemplo de execução:
-![hippo]([https://github.com/GustavoBazinga/Smart-Panel/blob/main/_internal/utilization_example.gif])
+![Usage_Example]([[https://github.com/GustavoBazinga/Smart-Panel/blob/main/_internal/utilization_example.gif](https://drive.google.com/file/d/1NKOxPwcy717pW2_5gHSvY1pC1xgcAzI-/view)])
 
 ## Tutorial: Gerando uma Senha Criptografada - Script
 
