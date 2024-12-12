@@ -204,7 +204,7 @@ class App(tk.Tk):
     def spotify(self):
         if not hasattr(self, "_spotify"):
             Utils.log(f"Starting Spotify")
-            self._spotify = Spotify(url=fr"https://accounts.spotify.com/pt-BR/login?continue=https%3A%2F%2Fopen.spotify.com%2Fplaylist%2F16F6TQwQ1pZGtRn9s9zXpM")
+            self._spotify = Spotify(url=Utils.config('SPOTIFY_PLAYLIST')
         else:
             response = self._spotify.on_maximize()
             if response == "closed":
