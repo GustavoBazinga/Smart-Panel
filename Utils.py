@@ -61,16 +61,16 @@ class Utils:
         def create_file():
             Utils.log("Creating the configuration file")
             with open("./_internal/config.txt", "w") as f:
-
-                f.write("LINK_DRIVE=" + "\n")
-                f.write("WITH_SPOTIFY=False" + "\n\n")
+                f.write("LINK_DRIVE=''" + "\n")
+                f.write("SPOTIFY_PLAYLIST=''" + "\n")
+                f.write("WITH_SPOTIFY=True" + "\n\n")
                 f.write("ACCOUNT_USERNAME=''" + "\n")
-                f.write("SPOTIFY_PASSWORD=''" + "\n\n\n")
-                f.write("----XPATHS----"+ "\n\n")
-                f.write("SPOTIFY_LOGIN_INPUT=/html/body/div[1]/div/div/div/div/div[2]/div[1]/div[1]/input" + "\n")
-                f.write("SPOTIFY_PASSWORD_INPUT=/html/body/div[1]/div/div/div/div/div[2]/div[1]/div[2]/div[2]/input" + "\n")
-                f.write("SPOTIFY_ACCESS_BUTTON=/html/body/div[1]/div/div/div/div/div[2]/div[2]/button" + "\n")
-                f.write("SPOTIFY_PLAY_BUTTON=/html/body/div[4]/div/div[2]/div[4]/div/div[2]/div[2]/div/main/section/div[2]/div[2]/div[2]/div/div/div[1]/button" + "\n")
+                f.write("SPOTIFY_PASSWORD=''" + "\n\n")
+                f.write("----XPATHS----"+ "\n\n")   
+                f.write("SPOTIFY_LOGIN_INPUT='/html/body/div[1]/div/div/div/div/div[2]/div[1]/div[1]/input'" + "\n")
+                f.write("SPOTIFY_PASSWORD_INPUT='/html/body/div[1]/div/div/div/div/div[2]/div[1]/div[2]/div[2]/input'" + "\n")
+                f.write("SPOTIFY_ACCESS_BUTTON='/html/body/div[1]/div/div/div/div/div[2]/div[2]/button'" + "\n")
+                f.write("SPOTIFY_PLAY_BUTTON='/html/body/div[4]/div/div[2]/div[4]/div/div[2]/div[2]/div/main/section/div[2]/div[2]/div[2]/div/div/div[1]/button'" + "\n\n")
                 f.write(fr"API_IP='{current_ip}'" + "\n")
 
             Utils.log("Configuration file created successfully")

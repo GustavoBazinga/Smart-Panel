@@ -53,6 +53,15 @@ class App(tk.Tk):
                 Utils.log(f"An error occurred while restarting the computer: {e}")
                 return {"status": "error"}
         
+        @app.route('/spotify', methods=['GET'])
+        def api_spotify():
+            Utils.log(f'API Spotify request received')
+            if hasattr(self, "_spotify"):
+                self._spotify.end()
+                del self._spotify
+            self.spotify()
+            return {"status": "success"}
+        
         app.run(port=5000, host=fr'{Utils.config("API_IP")}')
         
     def media_init(self):
@@ -173,24 +182,21 @@ class App(tk.Tk):
                                  "Se o problema persistir contate o suporte.")
 
     #Function to stop de media player, delete all files in assets directory and download new medias from google drive.
-    def videos_update(self):
-        try:
-            attempt = 1
-            while attempt != 4:
-                try:
-                    self.after(100, Utils.clear_folder('./_internal/src/assets'))
-                    Utils.log(f"Trying to download the videos, attempt {attempt}")
-                    if download_folder(Utils.config("LINK_DRIVE"), './_internal/src/assets'):
-                        attempt = 4
-                        Utils.log(f"Videos downloaded successfully")
-                except:
-                    attempt += 1
-                    Utils.log(f"An error occurred while downloading the videos, attempt {attempt}")
-                    time.sleep(5)
-            if self.load_media(loading=False):
-                self.play()
-        except Exception as e:
-            Utils.log(f"An error occurred while updating assets data: {e}")
+    def stop_video_and_update(self):
+        attempt = 1
+        while attempt != 4:
+            try:
+                self.after(100, Utils.clear_folder('./_internal/src/assets'))
+                Utils.log(f"Trying to download the videos, attempt {attempt}")
+                if download_folder(Utils.config("LINK_DRIVE"), './_internal/src/assets'):
+                    attempt = 4
+                    Utils.log(f"Videos downloaded successfully")
+            except:
+                attempt += 1
+                Utils.log(f"An error occurred while downloading the videos, attempt {attempt}")
+                time.sleep(5)
+        if self.load_media(loading=False):
+            self.play()
 
     #Function to close de app and all instances
     def destroy_app(self):
@@ -200,6 +206,7 @@ class App(tk.Tk):
             del self._spotify
         self.destroy()
 
+        Utils.log(f"Application closed")
         #Stop threads   
         os._exit(0)
 
