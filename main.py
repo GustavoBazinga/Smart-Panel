@@ -4,10 +4,10 @@ from Utils import Utils
 
 
 if __name__ == "__main__":  
-
-    Utils.check_config_file()
-
     Utils.create_default_folders()
+    
+    Utils.check_config_file()
+    
     try:
         app = App()
         app.mainloop()
