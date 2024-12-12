@@ -34,14 +34,24 @@ class App(tk.Tk):
         @app.route('/update', methods=['GET'])
         def api_update():
             Utils.log(f'API Update request received')
-            self.update_videos()
-            return {"status": "success"}
+            try:
+                self.update_videos()
+                Utils.log(f'API Update request completed')
+                return {"status": "success"}
+            except Exception as e:
+                Utils.log(f"An error occurred while updating the videos: {e}")
+                return {"status": "error"}
         
         @app.route('/restart', methods=['GET'])
         def api_restart():
             Utils.log(f'API Restart computer request received')
-            os.system("shutdown /r /t 1") 
-            return {"status": "success"}
+            try:
+                Utils.log(f'API Restart computer request completed')
+                os.system("shutdown /r /t 1") 
+                return {"status": "success"}
+            except Exception as e:
+                Utils.log(f"An error occurred while restarting the computer: {e}")
+                return {"status": "error"}
         
         app.run(port=5000, host=fr'{Utils.config("API_IP")}')
         
@@ -197,7 +207,7 @@ class App(tk.Tk):
     def spotify(self):
         if not hasattr(self, "_spotify"):
             Utils.log(f"Starting Spotify")
-            self._spotify = Spotify(url=fr"https://accounts.spotify.com/pt-BR/login?continue=https%3A%2F%2Fopen.spotify.com%2Fplaylist%2F16F6TQwQ1pZGtRn9s9zXpM")
+            self._spotify = Spotify(url=Utils.config("SPOTIFY_PLAYLIST"))
         else:
             response = self._spotify.on_maximize()
             if response == "closed":
