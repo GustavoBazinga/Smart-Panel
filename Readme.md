@@ -34,7 +34,7 @@ To generate an encrypted password using the encryption key located at `default\s
         The script will use the encryption key located in `default\secret.key` to encrypt the provided password and display the encrypted password in the terminal.
 
 Execution example:
-
+![Usage example](https://github.com/Erick-Porto/assets/blob/main/utilization_example.gif)
 ## Tutorial: Generating an Encrypted Password - Script
 
 1. **Run the `password_encrypt.py` script**:
