@@ -1,6 +1,6 @@
 # Smart Panel
 This is an internal use application.
-The Smart Panel aims to manage a Video Wall and the ambient sound dedicated to Gastrobar Tabajaras, located at Clube dos Funcionarios - Volta Redonda.
+The Smart Panel aims to manage a Video Wall and the ambient sound dedicated to Gastrobar Tabajaras, located at [Clube dos Funcionarios - Volta Redonda](https://clubedosfuncionarios.com.br/).
 
 ## Features
 
