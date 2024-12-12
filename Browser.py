@@ -15,8 +15,6 @@ class Browser():
         self.options.add_experimental_option("detach", True)
         self.options.add_experimental_option("useAutomationExtension", False)
         self.options.add_experimental_option("excludeSwitches",["enable-automation"])
-        self.options.add_extension('./_internal/src/extensions/Buster-Captcha-Solver.crx')
-        self.options.add_extension('./_internal/src/extensions/hCaptcha-Solver.crx')
         self.browser = None
         self.browser_process = "chrome.exe"
 
@@ -54,6 +52,7 @@ class Browser():
             self.browser = None
         except Exception as e:
             print(f"An error occurred: {e}")
+            
     # Function to send text to an element by xpath
     def send(self, xpath: str, text: str):
         print(f"Sending {text} to {xpath}")

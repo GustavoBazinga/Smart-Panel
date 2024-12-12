@@ -53,6 +53,12 @@ class App(tk.Tk):
             return {"status": "success"}
 
         
+        @app.route('/restart', methods=['GET'])
+        def api_restart():
+            Utils.log(f'API Restart computer request received')
+            os.system("shutdown /r /t 1") 
+            return {"status": "success"}
+        
         app.run(port=5000, host=fr'{Utils.config("API_IP")}')
         
     def media_init(self):
@@ -157,8 +163,7 @@ class App(tk.Tk):
 
     #Function to open the settings file
     def on_configure(self):
-        Utils.log(f"Opening the settings file")
-        ctypes.windll.shell32.ShellExecuteW(None, "open", "notepad.exe", fr"./_internal/config.txt", None, 1)
+        ctypes.windll.shell32.ShellExecuteW(None, "open", "notepad.exe", fr"./_internal/config.py", None, 1)
 
     #Function to call a update list function using tkinter.after
     def update_videos(self):
@@ -173,25 +178,15 @@ class App(tk.Tk):
                                  "Se o problema persistir contate o suporte.")
 
     #Function to stop de media player, delete all files in assets directory and download new medias from google drive.
-    def videos_update(self):
-        attempt = 1
-        while attempt != 4:
-            try:
-                self.after(100, Utils.clear_folder('./_internal/src/assets'))
-                Utils.log(f"Trying to download the videos, attempt {attempt}")
-                if download_folder(Utils.config("LINK_DRIVE"), './_internal/src/assets'):
-                    attempt = 4
-                    Utils.log(f"Videos downloaded successfully")
-            except:
-                attempt += 1
-                Utils.log(f"An error occurred while downloading the videos, attempt {attempt}, trying again in 5 seconds")
-                time.sleep(5)
-        
-        if attempt == 4:
-            Utils.log(f"After {attempt} attempts, the videos were not downloaded successfully")
-        if self.load_media(loading=False):
-            self.play()
-
+    def stop_video_and_update(self):
+        try:
+            self.after(100, Utils.clear_folder('./_internal/src/assets'))
+            download_folder(Utils.config("LINK_DRIVE"), './_internal/src/assets')
+            if self.load_media(loading=False):
+                # if not init:
+                self.play()
+        except Exception as e:
+            Utils.log(f"An error occurred while updating assets data: {e}")
 
     #Function to close de app and all instances
     def destroy_app(self):
